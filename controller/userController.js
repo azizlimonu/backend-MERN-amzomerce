@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const { generateRefreshToken } = require('../config/jwtToken');
 const User = require('../models/userModel');
 const asyncHandler = require('express-async-handler');
@@ -124,8 +125,80 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
   })
 });
 
+// delete user
+const deleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deleteUser = await User.findByIdAndDelete(id);
+    res.json({
+      deleteUser
+    });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+// updated user
+const updatedUser = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(_id, {
+      firstname: req?.body?.firstname,
+      lastname: req?.body?.lastname,
+      email: req?.body?.email,
+      mobile: req?.body?.mobile,
+    }, { new: true }
+    );
+    res.json(updatedUser);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+// block user
+const blockUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  // validate mongoId
+
+  try {
+    const block = await User.findByIdAndUpdate(id, {
+      isBlocked: true
+    }, { new: true });
+
+    res.json(block);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+// unblock user
+const unblockUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  // validate mongoId
+
+  try {
+    const unblock = await User.findByIdAndUpdate(id, {
+      isBlocked: false,
+    }, { new: true });
+
+    res.json({ message: "User unblocked" })
+  } catch (error) {
+    throw new Error(error);
+  }
+});
 
 
 module.exports = {
-  createUser, loginUser, getAllUser, getUser, logout, handleRefreshToken
+  createUser,
+  loginUser,
+  getAllUser,
+  getUser,
+  logout,
+  handleRefreshToken,
+  deleteUser,
+  updatedUser,
+  blockUser,
+  unblockUser
 }
