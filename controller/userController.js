@@ -1,7 +1,10 @@
 const { default: mongoose } = require('mongoose');
-const { generateRefreshToken } = require('../config/jwtToken');
 const User = require('../models/userModel');
 const asyncHandler = require('express-async-handler');
+const validateMongoId = require('../utils/validateMongoId');
+const { generateRefreshToken } = require('../config/generateRefreshToken');
+const { generateToken } = require('../config/jwtToken');
+const jwt = require('jsonwebtoken');
 
 // create User
 const createUser = asyncHandler(async (req, res) => {
@@ -25,7 +28,7 @@ const loginUser = asyncHandler(async (req, res) => {
   if (findUser && (await findUser.isPasswordMatched(password))) {
     const refreshToken = await generateRefreshToken(findUser?._id);
 
-    const updateUser = await User.findByIdAndUpdate(findUser.id, {
+    const updateUser = await User.findByIdAndUpdate(findUser._id, {
       refreshToken: refreshToken
     }, {
       new: true
@@ -42,7 +45,7 @@ const loginUser = asyncHandler(async (req, res) => {
       lastname: findUser?.lastname,
       email: findUser?.email,
       mobile: findUser?.mobile,
-      token: generateRefreshToken(findUser?._id),
+      token: generateToken(findUser?._id),
     });
   } else {
     throw new Error("Wrong Username or password");
@@ -91,6 +94,7 @@ const getAllUser = asyncHandler(async (req, res) => {
 // get User (single)
 const getUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  validateMongoId(id);
 
   try {
     const getaUser = await User.findById(id);
@@ -119,7 +123,7 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
       throw new Error('There is something wrong with the refresh token');
     }
 
-    const accessToken = generateRefreshToken(user?._id);
+    const accessToken = generateToken(user?._id);
 
     res.json({ accessToken });
   })
@@ -128,6 +132,7 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
 // delete user
 const deleteUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  validateMongoId(id);
 
   try {
     const deleteUser = await User.findByIdAndDelete(id);
@@ -142,6 +147,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 // updated user
 const updatedUser = asyncHandler(async (req, res) => {
   const { _id } = req.user;
+  validateMongoId(_id);
 
   try {
     const updatedUser = await User.findByIdAndUpdate(_id, {
@@ -160,7 +166,7 @@ const updatedUser = asyncHandler(async (req, res) => {
 // block user
 const blockUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  // validate mongoId
+  validateMongoId(id);
 
   try {
     const block = await User.findByIdAndUpdate(id, {
@@ -176,7 +182,7 @@ const blockUser = asyncHandler(async (req, res) => {
 // unblock user
 const unblockUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  // validate mongoId
+  validateMongoId(id);
 
   try {
     const unblock = await User.findByIdAndUpdate(id, {
