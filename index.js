@@ -3,6 +3,7 @@ const dbConnect = require('./config/dbConnect');
 const app = express();
 const dotenv = require('dotenv').config();
 const cookieParser = require('cookie-parser');
+const morgan = require('morgan');
 
 const PORT = process.env.PORT || 4000;
 
@@ -14,6 +15,7 @@ const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 dbConnect();
 
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());

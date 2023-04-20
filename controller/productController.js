@@ -19,7 +19,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // update Product
 const updateProduct = asyncHandler(async (req, res) => {
-  const id = req.params;
+  const { id } = req.params;
   validateMongoId(id);
 
   try {
@@ -41,7 +41,7 @@ const updateProduct = asyncHandler(async (req, res) => {
 
 // delete product
 const deleteProduct = asyncHandler(async (req, res) => {
-  const id = req.params;
+  const { id } = req.params;
   validateMongoId(id);
 
   try {
@@ -67,7 +67,12 @@ const getProduct = asyncHandler(async (req, res) => {
 
 // get all product
 const getAllProduct = asyncHandler(async (req, res) => {
-  res.send("All Product")
+  try {
+    const getAllProduct = await Product.find();
+    res.json(getAllProduct);
+  } catch (error) {
+    throw new Error(error);
+  }
 });
 
 // add wishlist
